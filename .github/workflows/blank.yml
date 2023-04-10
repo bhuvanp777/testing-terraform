@@ -23,4 +23,4 @@ jobs:
         run: ls && pwd 
 
       - name: Run Terraform Lint
-        run: tflint --init && find . -type f -name "*.tf" -exec sh -c 'tflint -f compact {} >/dev/null 2>&1 || (tflint -f compact {})' \;
+        run: tflint --init && find . -type f -name "*.tf" -exec sh -c 'tflint -f compact {} >/dev/null 2>&1 || (tflint -f compact {})' \; || exit 1
