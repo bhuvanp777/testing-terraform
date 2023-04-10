@@ -1,12 +1,15 @@
-name: Terraform Lint
+name: Terraform Lint and Sec
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  terraform-lint:
+  terraform-lint-sec:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Git repository
@@ -19,12 +22,25 @@ jobs:
           chmod +x tflint
           sudo mv tflint /usr/local/bin/
           
-#       - name: Format Terraform Code
-#         id: fmt
-#         run: terraform fmt -list=true -write=false -diff=true -check=true -recursive
-#         continue-on-error: false
+      - name: Format Terraform Code
+        id: fmt
+        run: terraform fmt -list=true -write=false -diff=true -check=true -recursive
+        continue-on-error: false
 
       - name: Run Terraform Lint
         run: tflint --init && find . -type f -name "*.tf" -exec sh -c 'tflint -f compact {} >/dev/null 2>&1 || (tflint -f compact {})' \;
         continue-on-error: false 
-    
+      
+      - name: TF-SEC
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tfsec_args: --force-all-dirs --no-module-downloads
+
+      - name: Terraform security scan
+        uses: aquasecurity/tfsec-action@v1.0.2
+        with:
+          version: v1.27.1
+          additional_args: --exclude aws-s3-encryption-customer-key,aws-cloudwatch-log-group-customer-key --force-all-dirs --no-module-downloads
+  
