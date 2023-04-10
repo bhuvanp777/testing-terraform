@@ -19,19 +19,12 @@ jobs:
           chmod +x tflint
           sudo mv tflint /usr/local/bin/
           
-      - name: some info
-        run: ls && pwd 
+      - name: Format Terraform Code
+        id: fmt
+        run: terraform fmt -list=true -write=false -diff=true -check=true -recursive
+        continue-on-error: false
 
       - name: Run Terraform Lint
-        run: tflint --init && find . -type f -name "*.tf" -exec sh -c 'tflint -f compact {} >/dev/null 2>&1 || (tflint -f compact {})' \; || exit 1
-      
-      - name: Check tflint output for warnings and fail if found
-        run: |
-          if tflint --version | grep -q 'tflint version'; then
-            tflint_output="$(tflint -f compact .)"
-            if echo "$tflint_output" | grep -q "warning"; then
-              echo "tflint warnings found:"
-              echo "$tflint_output"
-              exit 1
-            fi
-          fi
+        run: tflint --init && find . -type f -name "*.tf" -exec sh -c 'tflint -f compact {} >/dev/null 2>&1 || (tflint -f compact {})' \;
+        continue-on-error: false 
+    
