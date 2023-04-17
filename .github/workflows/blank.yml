@@ -1,37 +1,39 @@
-name: Terraform Lint and Sec
+name: TF Lint and TF Sec
 
 on:
   push:
     branches:
       - main
   pull_request:
-    branches:
-      - main
+
 
 jobs:
-  terraform-lint-sec:
+  terraform-tflint-tfsec:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Git repository
         uses: actions/checkout@v2
 
-      - name: Install tflint
-        run: |
-          curl -L "$(curl -Ls https://api.github.com/repos/terraform-linters/tflint/releases/latest | jq -r '.assets[].browser_download_url | select(contains("linux_amd64.zip"))')" -o tflint.zip
-          unzip tflint.zip
-          chmod +x tflint
-          sudo mv tflint /usr/local/bin/
-          
-#       - name: Format Terraform Code
-#         id: fmt
-#         run: terraform fmt -list=true -write=false -diff=true -check=true -recursive
-#         continue-on-error: false
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.5
 
-      - name: Run Terraform Lint
+      - name: Format Terraform Code
+        id: fmt
+        run: terraform fmt -list=true -write=false -diff=true -check=true -recursive
+        continue-on-error: false
+
+      - name: Setup tflint
+        uses: terraform-linters/setup-tflint@v2
+        with:
+          tflint_version: v0.38.1
+
+      - name: Run tflint
         run: tflint --init && find . -type f -name "*.tf" -exec sh -c 'tflint -f compact {} >/dev/null 2>&1 || (tflint -f compact {})' \;
-        continue-on-error: false 
-      
-      - name: TF-SEC
+        continue-on-error: false
+
+      - name: Run tfsec PR commentor
         if: ${{ github.event_name == 'pull_request' }}
         uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
         with:
@@ -42,5 +44,4 @@ jobs:
         uses: aquasecurity/tfsec-action@v1.0.2
         with:
           version: v1.27.1
-          additional_args: --exclude aws-s3-encryption-customer-key,aws-cloudwatch-log-group-customer-key --force-all-dirs --no-module-downloads
-  
+          additional_args: --exclude aws-s3-encryption-customer-key,aws-cloudwatch-log-group-customer-key --force-all-dirs --exclude-downloaded-modules
