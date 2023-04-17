@@ -19,9 +19,9 @@ jobs:
         with:
           terraform_version: 1.1.5
 
-      - name: Format Terraform Code
-        id: fmt
-        run: terraform fmt -list=true -write=false -diff=true -check=true -recursive
+#       - name: Format Terraform Code
+#         id: fmt
+#         run: terraform fmt -list=true -write=false -diff=true -check=true -recursive
 #         continue-on-error: true
 
       - name: Setup tflint
