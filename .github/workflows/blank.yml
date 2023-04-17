@@ -22,7 +22,7 @@ jobs:
       - name: Format Terraform Code
         id: fmt
         run: terraform fmt -list=true -write=false -diff=true -check=true -recursive
-        continue-on-error: false
+#         continue-on-error: true
 
       - name: Setup tflint
         uses: terraform-linters/setup-tflint@v2
