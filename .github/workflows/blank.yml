@@ -25,9 +25,9 @@ jobs:
 #         continue-on-error: true
 
       - name: Setup tflint
-        uses: terraform-linters/setup-tflint@v2
+        uses: terraform-linters/setup-tflint@v3
         with:
-          tflint_version: v0.38.1
+          tflint_version: latest
 
       - name: Run tflint
         run: tflint --init && find . -type f -name "*.tf" -exec sh -c 'tflint -f compact {} >/dev/null 2>&1 || (tflint -f compact {})' \;
